@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ProblySUS | Cyber-Security Scanner</title>
+  <style>
+    :root {
+      --bg-dark: #020617; /* Near Black */
+      --deep-blue: #1e3a8a;
+      --neon-blue: #3b82f6;
+      --accent-cyan: #06b6d4;
+      --glass: rgba(30, 58, 138, 0.2);
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(30, 58, 138, 0.5) 0, transparent 50%), 
+        radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.2) 0, transparent 50%);
+      color: white;
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      height: 100vh;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      perspective: 1000px;
+    }
+
+    /* 3D Container */
+    .scanner-card {
+      background: var(--glass);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 3rem;
+      border-radius: 24px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      width: 500px;
+      text-align: center;
+      transform: rotateX(5deg);
+      transition: transform 0.5s ease;
+      position: relative;
+    }
+
+    .scanner-card:hover {
+      transform: rotateX(0deg) scale(1.02);
+      border-color: var(--accent-cyan);
+    }
+
+    h2 {
+      font-size: 2.5rem;
+      margin-bottom: 1.5rem;
+      text-transform: uppercase;
+      letter-spacing: 4px;
+      background: linear-gradient(to right, #fff, var(--accent-cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 0 10px rgba(6, 182, 212, 0.5));
+    }
+
+    .input-group {
+      position: relative;
+      margin-bottom: 2rem;
+    }
+
+    input {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.3);
+      border: 2px solid var(--deep-blue);
+      padding: 15px;
+      border-radius: 12px;
+      color: white;
+      font-size: 1rem;
+      outline: none;
+      transition: all 0.3s ease;
+      box-sizing: border-box;
+    }
+
+    input:focus {
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 15px rgba(6, 182, 212, 0.4);
+    }
+
+    button {
+      width: 100%;
+      padding: 15px;
+      background: linear-gradient(135deg, var(--deep-blue), var(--neon-blue));
+      border: none;
+      border-radius: 12px;
+      color: white;
+      font-weight: bold;
+      font-size: 1.1rem;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    button:hover {
+      filter: brightness(1.2);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(59, 130, 246, 0.5);
+    }
+
+    #result {
+      margin-top: 2rem;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 15px;
+      border-radius: 12px;
+      text-align: left;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      color: var(--accent-cyan);
+      max-height: 200px;
+      overflow-y: auto;
+      border-left: 4px solid var(--accent-cyan);
+      display: none; /* Hidden until scan */
+    }
+
+    /* Decorative Scan Line Animation */
+    .scan-line {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: var(--accent-cyan);
+      box-shadow: 0 0 15px var(--accent-cyan);
+      opacity: 0;
+    }
+
+    .scanning .scan-line {
+      animation: scan 2s linear infinite;
+      opacity: 1;
+    }
+
+    @keyframes scan {
+      0% { top: 0%; }
+      100% { top: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="scanner-card" id="card">
+    <div class="scan-line"></div>
+    <h2>ProblySUS</h2>
+    <p style="color: #94a3b8; margin-bottom: 2rem;">Advanced Scam Analysis Portal</p>
+
+    <div class="input-group">
+      <input id="url" type="text" placeholder="https://suspicious-site.com">
+    </div>
+
+    <button onclick="analyze()">Initiate Scan</button>
+
+    <pre id="result"></pre>
+  </div>
+
+  <script>
+    function analyze() {
+      const url = document.getElementById("url").value;
+      const card = document.getElementById("card");
+      const resultBox = document.getElementById("result");
+
+      if(!url) return alert("Please enter a URL");
+
+      // Start Animation
+      card.classList.add("scanning");
+      resultBox.style.display = "block";
+      resultBox.textContent = "> Initializing Neural Network...\n> Bypassing Firewalls...\n> Analyzing Metadata...";
+
+      fetch("http://127.0.0.1:5000/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url })
+      })
+      .then(res => res.json())
+      .then(data => {
+        card.classList.remove("scanning");
+        resultBox.textContent = JSON.stringify(data, null, 2);
+      })
+      .catch(err => {
+        card.classList.remove("scanning");
+        resultBox.textContent = "!! SYSTEM ERROR: Connection to Core Refused !!";
+      });
+    }
+  </script>
+
+</body>
+</html>
