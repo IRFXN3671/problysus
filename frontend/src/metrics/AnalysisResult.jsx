@@ -1,5 +1,4 @@
-import React from 'react'
-import { motion } from 'framer-motion'
+import { motion } from 'framer-motion' // eslint-disable-line no-unused-vars
 
 const AnalysisResult = ({ data }) => {
     const { riskScore, label, reasons, checks } = data

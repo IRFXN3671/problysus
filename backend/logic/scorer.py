@@ -7,26 +7,30 @@ def calculate_risk_score(check_results):
     reasons = []
 
     # Unpack results
-    blacklist = check_results.get('blacklist', False)
-    domain_age = check_results.get('domain_age', 0)
-    https_valid = check_results.get('https_valid', True)
-    patterns = check_results.get('patterns', {})
-    trust_pages = check_results.get('trust_pages', [])
+    blacklist = check_results.get("blacklist", False)
+    domain_age = check_results.get("domain_age", 0)
+    https_valid = check_results.get("https_valid", True)
+    patterns = check_results.get("patterns", {})
+    trust_pages = check_results.get("trust_pages", [])
 
     # 1. Blacklist Check
-    blacklist_info = check_results.get('blacklist', {})
+    blacklist_info = check_results.get("blacklist", {})
     # Handle both old boolean check and new dict check
-    is_listed = blacklist_info.get('listed', False) if isinstance(blacklist_info, dict) else blacklist_info
+    is_listed = (
+        blacklist_info.get("listed", False)
+        if isinstance(blacklist_info, dict)
+        else blacklist_info
+    )
 
     if is_listed:
         if isinstance(blacklist_info, dict):
-            risk = blacklist_info.get('risk_level', 'High')
-            category = blacklist_info.get('category', 'Unknown')
-            
-            if risk == 'Critical':
+            risk = blacklist_info.get("risk_level", "High")
+            category = blacklist_info.get("category", "Unknown")
+
+            if risk == "Critical":
                 score += 50
                 reasons.append(f"Domain is blacklisted (Critical Risk: {category})")
-            elif risk == 'High':
+            elif risk == "High":
                 score += 40
                 reasons.append(f"Domain is blacklisted ({category})")
             else:
@@ -55,27 +59,27 @@ def calculate_risk_score(check_results):
         reasons.append("Website does not use a valid HTTPS connection")
 
     # 4. Suspicious Patterns (+10-15)
-    if patterns.get('keywords'):
+    if patterns.get("keywords"):
         score += 15
         reasons.append(f"Suspicious keywords found: {', '.join(patterns['keywords'])}")
-    
-    if patterns.get('hyphens'):
+
+    if patterns.get("hyphens"):
         score += 10
         reasons.append("Domain name contains excessive hyphens")
-    
-    if patterns.get('suspicious_tld'):
+
+    if patterns.get("suspicious_tld"):
         score += 10
         reasons.append("Domain uses a potentially risky TLD")
-    
-    if patterns.get('ip_based'):
+
+    if patterns.get("ip_based"):
         score += 15
         reasons.append("URL is IP-based (often used in phishing)")
 
     # 5. Trust Pages (+5-10 per missing page, max 20?)
     # Logic: Missing trust pages increases risk.
-    required_pages = ['privacy', 'terms', 'contact', 'about']
+    required_pages = ["privacy", "terms", "contact", "about"]
     missing_pages = [page for page in required_pages if page not in trust_pages]
-    
+
     if len(missing_pages) > 2:
         score += 10
         reasons.append("Missing multiple trust pages (Privacy, Terms, etc.)")

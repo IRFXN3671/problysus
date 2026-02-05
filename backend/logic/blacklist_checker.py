@@ -1,6 +1,7 @@
 import json
 import os
 
+
 def load_blacklist():
     """
     Loads the blacklist from the JSON file.
@@ -8,18 +9,20 @@ def load_blacklist():
     try:
         # Construct path relative to this file
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        data_path = os.path.join(current_dir, '..', 'data', 'blacklist_sources.json')
-        
-        with open(data_path, 'r') as f:
+        data_path = os.path.join(current_dir, "..", "data", "blacklist_sources.json")
+
+        with open(data_path, "r") as f:
             data = json.load(f)
-            return data.get('domains', {})
+            return data.get("domains", {})
     except Exception as e:
         print(f"Error loading blacklist: {e}")
         return {}
 
+
 # Cache the blacklist in memory
 BLACKLIST_DB = {}
 LAST_LOADED = 0
+
 
 def load_blacklist():
     """
@@ -28,8 +31,8 @@ def load_blacklist():
     global BLACKLIST_DB, LAST_LOADED
     try:
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        data_path = os.path.join(current_dir, '..', 'data', 'blacklist_sources.json')
-        
+        data_path = os.path.join(current_dir, "..", "data", "blacklist_sources.json")
+
         if not os.path.exists(data_path):
             return
 
@@ -37,15 +40,17 @@ def load_blacklist():
         mtime = os.path.getmtime(data_path)
         if mtime > LAST_LOADED:
             # print(f"Reloading blacklist data (changed at {mtime})")
-            with open(data_path, 'r', encoding='utf-8') as f:
+            with open(data_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
-                BLACKLIST_DB = data.get('domains', {})
+                BLACKLIST_DB = data.get("domains", {})
                 LAST_LOADED = mtime
     except Exception as e:
         print(f"Error loading blacklist: {e}")
 
+
 # Initial load
 load_blacklist()
+
 
 def check_blacklist(hostname):
     """
@@ -55,19 +60,37 @@ def check_blacklist(hostname):
     # Ensure data is up to date
     load_blacklist()
 
+    # 0. Whitelist Check (Hardcoded safety net)
+    WHITELIST = {
+        "github.com",
+        "google.com",
+        "facebook.com",
+        "twitter.com",
+        "linkedin.com",
+        "microsoft.com",
+        "apple.com",
+        "amazon.com",
+        "cloudflare.com",
+        "gitlab.com",
+    }
+
+    if hostname in WHITELIST or (
+        hostname.startswith("www.") and hostname[4:] in WHITELIST
+    ):
+        return {
+            "listed": False,
+            "category": "Whitelisted",
+            "source": "Internal",
+            "risk_level": "Safe",
+        }
+
     if hostname in BLACKLIST_DB:
         entry = BLACKLIST_DB[hostname]
         return {
             "listed": True,
             "category": entry.get("category", "Uncategorized"),
             "source": entry.get("source", "Unknown"),
-            "risk_level": entry.get("risk_level", "High")
+            "risk_level": entry.get("risk_level", "High"),
         }
-    
-    return {
-        "listed": False,
-        "category": None,
-        "source": None,
-        "risk_level": None
-    }
 
+    return {"listed": False, "category": None, "source": None, "risk_level": None}
