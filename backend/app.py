@@ -77,7 +77,8 @@ def analyze_url():
             "domainAgeDays": age_days,
             "suspiciousPatterns": any(patterns.values()),
             "trustPagesFound": trust_pages,
-            "blacklisted": is_blacklisted,
+            "blacklisted": is_blacklisted.get('listed', False) if isinstance(is_blacklisted, dict) else is_blacklisted,
+            "blacklistDetails": is_blacklisted,
             "creationDate": creation_date
         },
         "timestamp": "2026-02-05T10:30:00Z" # TODO: Use real timestamp

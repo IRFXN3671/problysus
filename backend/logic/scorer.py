@@ -13,10 +13,29 @@ def calculate_risk_score(check_results):
     patterns = check_results.get('patterns', {})
     trust_pages = check_results.get('trust_pages', [])
 
-    # 1. Blacklist Check (+40)
-    if blacklist:
-        score += 40
-        reasons.append("Domain is blacklisted")
+    # 1. Blacklist Check
+    blacklist_info = check_results.get('blacklist', {})
+    # Handle both old boolean check and new dict check
+    is_listed = blacklist_info.get('listed', False) if isinstance(blacklist_info, dict) else blacklist_info
+
+    if is_listed:
+        if isinstance(blacklist_info, dict):
+            risk = blacklist_info.get('risk_level', 'High')
+            category = blacklist_info.get('category', 'Unknown')
+            
+            if risk == 'Critical':
+                score += 50
+                reasons.append(f"Domain is blacklisted (Critical Risk: {category})")
+            elif risk == 'High':
+                score += 40
+                reasons.append(f"Domain is blacklisted ({category})")
+            else:
+                score += 20
+                reasons.append(f"Domain is blacklisted (Potential {category})")
+        else:
+            # Fallback for old boolean format
+            score += 40
+            reasons.append("Domain is blacklisted")
 
     # 2. Domain Age Check
     # < 30 days -> +25
